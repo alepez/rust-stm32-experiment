@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+# We can use OpenOCD to flash an elf file to a board
+
+ELF="${1:-target/thumbv7em-none-eabihf/release/blinky}"
+
+EXPECTED_OPENOCD_VERSION='Open On-Chip Debugger 0.10.0+dev-00021-g524e8c8 (2019-04-12-08:33)'
+
+if [ "$( openocd -v 2>&1 | grep 'Open On-Chip Debugger' )" != "${EXPECTED_OPENOCD_VERSION}" ]; then
+  echo "Invalid openocd version"
+  exit
+fi
+
+if [ ! -e ${ELF} ]; then
+  echo "Invalid ELF: ${ELF}"
+  exit
+fi
+
+while true; do
+  openocd \
+    -c "tcl_port disabled" \
+    -c "gdb_port 3333" \
+    -c "telnet_port disabled" \
+    -f "openocd.cfg"
+  sleep 0.1
+done
