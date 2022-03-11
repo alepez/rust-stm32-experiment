@@ -16,7 +16,7 @@ use panic_halt as _;
 
 use stm32h7xx_hal::{
     prelude::*,
-    serial::{self, Serial, Error}
+    serial::{self, Serial, Error},
 };
 use core::fmt::Write;
 
@@ -36,16 +36,17 @@ fn main() -> ! {
 
     // Freeze the configuration of all the clocks in the system and
     // retrieve the Core Clock Distribution and Reset (CCDR) object
-    let rcc = rcc.sys_ck(400.mhz()).use_hse(8.mhz()).bypass_hse();
+    let rcc = rcc.use_hse(8.mhz()).bypass_hse();
     let ccdr = rcc.freeze(pwrcfg, &dp.SYSCFG);
 
     // Acquire the GPIOB peripheral
     let gpiob = dp.GPIOB.split(ccdr.peripheral.GPIOB);
 
-    // Configure gpio B pin 7 as a push-pull output.
-    let mut ld2 = gpiob.pb7.into_push_pull_output();
+    // Configure gpio B pin 0 as a push-pull output.
+    let mut ld2 = gpiob.pb0.into_push_pull_output();
+
     // Configure gpio B pin 14 as a push-pull output.
-    let mut ld3 = gpiob.pb14.into_push_pull_output();
+    // let mut ld3 = gpiob.pb14.into_push_pull_output();
 
     // Acquire the GPIOD peripheral
     let gpiod = dp.GPIOD.split(ccdr.peripheral.GPIOD);
@@ -58,33 +59,37 @@ fn main() -> ! {
         dp.USART3,
         serial::config::Config::default().baudrate(115200.bps()),
         ccdr.peripheral.USART3,
-        &ccdr.clocks
+        &ccdr.clocks,
     ).unwrap();
 
     let (mut tx, mut rx) = serial.split();
 
     // core::fmt::Write is implemented for tx.
     writeln!(tx, "Hello World\r").unwrap();
-    writeln!(tx, "Entering echo mode..\r").unwrap();
+    // writeln!(tx, "Entering echo mode..\r").unwrap();
     loop {
         // Echo what is received on the serial link.
         match rx.read() {
             Ok(c) => {
                 tx.write(c).unwrap();
+                ld2.set_high().unwrap();
             }
-            Err(nb::Error::WouldBlock) => {
-            },
-            Err(nb::Error::Other(err)) => {
-                match err {
-                    Error::Framing => {
-                        ld2.set_high().unwrap(); // blue
-                    }
-                    _ => {
-                        ld3.set_high().unwrap(); // red
-                    }
-                }
-                panic!("");
-            },
+            // Err(nb::Error::WouldBlock) => {
+            // },
+            // Err(nb::Error::Other(err)) => {
+            //     match err {
+            //         Error::Framing => {
+            // blue
+            // }
+            // _ => {
+            // ld3.set_high().unwrap(); // red
+            // }
+            // }
+            // panic!("");
+            // },
+            _ => {
+                ld2.set_low().unwrap();
+            }
         }
     }
 }
