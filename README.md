@@ -89,6 +89,11 @@ is provided.
 You can also perform debugging with a GUI using VS Code with the Cortex-Debug extension.
 Some configuration files were provided in the `.vscode` folder.
 
+## Sensors list
+
+- [Ultrasonic distance (HC-SR04)](https://github.com/nordmoen/hc-sr04)
+- [IMU (MPU-6050)](https://github.com/juliangaal/mpu6050)
+
 ## License
 
 [0-clause BSD license](LICENSE-0BSD.txt).
